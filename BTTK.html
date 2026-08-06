@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ဘာသာဋီကာအဘိဓာန်</title>
+    <style>
+        /* Base Styles replacing Tailwind */
+        :root {
+            --primary: #4f46e5; /* indigo-600 */
+            --primary-hover: #4338ca; /* indigo-700 */
+            --bg-color: #f7f9fb;
+            --surface: #ffffff;
+            --text-main: #1f2937; /* gray-800 */
+            --text-muted: #6b7280; /* gray-500 */
+            --border-color: #e5e7eb; /* gray-200 */
+            --error-bg: #fee2e2;
+            --error-text: #b91c1c;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            color: var(--text-main);
+            line-height: 1.5;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 42rem; /* max-w-2xl */
+            background-color: var(--surface);
+            padding: 1.5rem;
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border-top: 4px solid var(--primary);
+            box-sizing: border-box;
+        }
+
+        @media (min-width: 640px) {
+            .main-container { padding: 2.5rem; }
+            body { padding: 2rem; }
+        }
+
+        h1 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 2rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* Search Input Styles */
+        .search-wrapper {
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .input-container { position: relative; }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            padding-right: 2.5rem;
+            font-size: 1.125rem;
+            border: 2px solid #d1d5db; /* gray-300 */
+            border-radius: 0.5rem;
+            box-sizing: border-box;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2); /* ring */
+        }
+
+        .icon-container {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            display: flex;
+            align-items: center;
+            padding-right: 0.75rem;
+            pointer-events: none;
+        }
+
+        .icon {
+            height: 1.25rem;
+            width: 1.25rem;
+            fill: #9ca3af; /* gray-400 */
+        }
+
+        /* Dropdown Styles */
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            width: 100%;
+            max-height: 250px;
+            overflow-y: auto;
+            background-color: var(--surface);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            margin-top: 0.25rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+            box-sizing: border-box;
+        }
+        
+        .dropdown-menu.show { display: block; }
+
+        .dropdown-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            border-bottom: 1px solid #f3f4f6;
+            color: var(--text-main);
+        }
+
+        .dropdown-item:last-child { border-bottom: none; }
+        .dropdown-item:hover { background-color: #f3f4f6; }
+
+        /* Error Message */
+        #errorMessage {
+            display: none;
+            background-color: var(--error-bg);
+            border: 1px solid #f87171;
+            color: var(--error-text);
+            padding: 0.75rem 1rem;
+            border-radius: 0.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Results Area */
+        #resultsContainer {
+            max-height: 24rem;
+            overflow-y: auto;
+        }
+
+        .result-card {
+            padding: 1.25rem;
+            border: 1px solid #c7d2fe; /* indigo-200 */
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            background-color: var(--surface);
+            margin-bottom: 1rem;
+        }
+
+        .result-header {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #f3f4f6;
+            display: flex;
+            align-items: center;
+            color: #4338ca;
+        }
+
+        .ref-item {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-start;
+            border: 2px solid #f3f4f6;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        @media (min-width: 640px) {
+            .ref-item {
+                flex-direction: row;
+                align-items: center;
+            }
+        }
+
+        .ref-item:hover {
+            background-color: #eef2ff;
+            border-color: #818cf8;
+        }
+
+        .ref-item-disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+            background-color: #f9fafb;
+        }
+        .ref-item-disabled:hover {
+            background-color: #f9fafb;
+            border-color: #f3f4f6;
+        }
+
+        .ref-content { flex: 1; width: 100%; }
+
+        .book-title {
+            display: flex;
+            align-items: center;
+            color: #312e81; /* indigo-900 */
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            font-size: 1.125rem;
+        }
+
+        .book-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            margin-right: 0.5rem;
+            color: #6366f1; /* indigo-500 */
+        }
+
+        .ref-details {
+            font-size: 0.875rem;
+            color: #374151; /* gray-700 */
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .page-badge {
+            background-color: #e0e7ff; /* indigo-100 */
+            color: #3730a3; /* indigo-800 */
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.375rem;
+            border: 1px solid #c7d2fe;
+            font-weight: 600;
+        }
+
+        .ref-text {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .btn {
+            margin-top: 0.75rem;
+            background-color: var(--primary);
+            color: white;
+            font-size: 0.875rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: none;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        @media (min-width: 640px) {
+            .btn { margin-top: 0; }
+        }
+
+        .btn:hover:not(:disabled) { background-color: var(--primary-hover); }
+        .btn:disabled { background-color: #9ca3af; cursor: not-allowed; }
+        
+        .btn-icon {
+            width: 1rem;
+            height: 1rem;
+            margin-left: 0.5rem;
+        }
+
+        .hidden { display: none !important; }
+        .text-center { text-align: center; }
+        .mt-10 { margin-top: 2.5rem; }
+        
+        svg { width: 1.5rem; height: 1.5rem; }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <h1>ဘာသာဋီကာအဘိဓာန်</h1>
+
+        <div class="search-wrapper" id="searchContainer">
+            <label for="searchInput">ဝေါဟာရ (တည်ပုဒ်) ရွေးချယ်ပါ</label>
+            <div class="input-container">
+                <input type="text" id="searchInput" placeholder="ရှာဖွေရန် ရိုက်ထည့်ပါ သို့မဟုတ် ရွေးချယ်ပါ..." autocomplete="off">
+                <div class="icon-container">
+                    <svg class="icon" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+            </div>
+            <div id="dropdownMenu" class="dropdown-menu"></div>
+        </div>
+
+        <div id="errorMessage">
+            <strong>သတိ!</strong> <span id="errorText"></span>
+        </div>
+
+        <div id="resultsContainer"></div>
+        <p id="initialMessage" class="text-center mt-10" style="color: var(--text-muted);"></p>
+    </div>
+
+    <script>
+        // Wrapped in an IIFE to avoid global scope pollution which Blogspot sometimes messes with
+        (function() {
+            const BASE_URL = "https://dhammadownload.com/File-Library/Ashin-Janakabhivamsa/books/BT_PDF'S/";
+
+            const BOOKS = [
+                { key: "KS_BT_01", name: "ကစ္စည်းဘာသာဋီကာ (ပတွဲ)", index_key: "ကစ္စည်း-ဘာသာဋီကာ၊ ၁", file: "KS_BT_01.pdf", page_offset: 7 }, 
+                { key: "KS_BT_02", name: "ကစ္စည်းဘာသာဋီကာ (ဒုတွဲ)", index_key: "ကစ္စည်း-ဘာသာဋီကာ၊ ၂", file: "KS_BT_02.pdf", page_offset: 1 },
+                { key: "RPSD_BT_01", name: "ရူပသိဒ္ဓိဘာသာဋီကာ (ပတွဲ)", index_key: "ရူပသိဒ္ဓိ-ဘာသာဋီကာ၊ ၁", file: "RPSD_BT_01.pdf", page_offset: 1 },
+                { key: "RPSD_BT_02", name: "ရူပသိဒ္ဓိဘာသာဋီကာ (ဒုတွဲ)", index_key: "ရူပသိဒ္ဓိ-ဘာသာဋီကာ၊ ၂", file: "RPSD_BT_02.pdf", page_offset: 20 },
+                { key: "BDCT_BT", name: "ဘေဒစိန္တာဋီကာ", index_key: "ဘေဒစိန္တာ-ဘာသာဋီကာ", file: "BDCT_BT.pdf", page_offset: 12 },
+                { key: "KCYN_BT", name: "ကစ္စာယန ဘာသာဋီကာ", index_key: "ကစ္စာယန-ဘာသာဋီကာ", file: "KCYN_BT.pdf", page_offset: 1 },
+                { key: "ATAP", name: "အဋ္ဌကထာအခြေပြု", index_key: "အဋ္ဌကထာ-အခြေပြု", file: "ATAP.pdf", page_offset: 1 },
+                { key: "SGH_BT", name: "အခြေပြုသဂြိုလ်", index_key: "သင်္ဂြီုဟ်ဘာသာဋီကာ", file: "SGH_BT.pdf", page_offset: 1 },
+                { key: "TKK_PN", name: "ဋီကာကျော် နိဿယ", index_key: "ဋီကာကျော်-နိဿယ", file: "TKK_PN.pdf", page_offset: 1 },
+                { key: "VT_TCS_BT", name: "ဝီထိနှင့် သုံးချက်စုဘာသာဋီကာ", index_key: "ဝီထိနှင့် သုံးချက်စု-ဘာသာဋီကာ", file: "VT_TCS_BT.pdf", page_offset: 1 },
+                { key: "SI_BT_01", name: "သီလက္ခန်ဘာသာဋီကာ (ပ တွဲ)", index_key: "သီလက္ခန်-ဘာသာဋီကာ၊ ၁", file: "SI_BT_01.pdf", page_offset: 1 },
+                { key: "SI_BT_02", name: "သီလက္ခန်ဘာသာဋီကာ (ဒု တွဲ)", index_key: "သီလက္ခန်-ဘာသာဋီကာ၊ ၂", file: "SI_BT_02.pdf", page_offset: 1 },
+                { key: "SI_BT_03", name: "သီလက္ခန်ဘာသာဋီကာ (တ တွဲ)", index_key: "သီလက္ခန်-ဘာသာဋီကာ၊ ၃", file: "SI_BT_03.pdf", page_offset: 1 },
+                { key: "SI_BT_04", name: "သီလက္ခန်ဘာသာဋီကာ (စ တွဲ)", index_key: "သီလက္ခန်-ဘာသာဋီကာ၊ ၄", file: "SI_BT_04.pdf", page_offset: 1 },
+                { key: "S_MV_AT_BT_01", name: "သုတ်မဟာဝါဘာသာဋီကာ (ပ တွဲ)", index_key: "သုတ်မဟာဝါ-ဘာသာဋီကာ၊ ၁", file: "S_MV_AT_BT_01.pdf", page_offset: 1 },
+                { key: "S_MV_AT_BT_02", name: "သုတ်မဟာဝါဘာသာဋီကာ (ဒု တွဲ)", index_key: "သုတ်မဟာဝါ-ဘာသာဋီကာ၊ ၂", file: "S_MV_AT_BT_02.pdf", page_offset: 1 },
+                { key: "S_MV_AT_BT_03", name: "သုတ်မဟာဝါဘာသာဋီကာ (တ တွဲ)", index_key: "သုတ်မဟာဝါ-ဘာသာဋီကာ၊ ၃", file: "S_MV_AT_BT_03.pdf", page_offset: 1 },
+                { key: "ATSLN_BT_01", name: "အဋ္ဌသာလိနီ ဘာသာဋီကာ (ပ တွဲ)", index_key: "အဋ္ဌသာလိနီ-ဘာသာဋီကာ၊ ၁", file: "ATSLN_BT_01.pdf", page_offset: 1 },
+                { key: "ATSLN_BT_02", name: "အဋ္ဌသာလိနီ ဘာသာဋီကာ (ဒု တွဲ)", index_key: "အဋ္ဌသာလိနီ-ဘာသာဋီကာ၊ ၂", file: "ATSLN_BT_02.pdf", page_offset: 1 },
+                { key: "ATSLN_BT_03", name: "အဋ္ဌသာလိနီ ဘာသာဋီကာ (တ တွဲ)", index_key: "အဋ္ဌသာလိနီ-ဘာသာဋီကာ၊ ၃", file: "ATSLN_BT_03.pdf", page_offset: 1 },
+                { key: "ATSLN_BT_04", name: "အဋ္ဌသာလိနီ ဘာသာဋီကာ (စ တွဲ)", index_key: "အဋ္ဌသာလိနီ-ဘာသာဋီကာ၊ ၄", file: "ATSLN_BT_04.pdf", page_offset: 1 },
+                { key: "DTKT_AT_BT", name: "ဓာတုကထာ/ပုဂ္ဂလပညတ္တိအဋ္ဌကထာဘာသာဋီကာ", index_key: "ဓာတုကထာ-ဘာသာဋီကာ", file: "DTKT_AT_BT.pdf", page_offset: 1 },
+                { key: "KTVT_AT_BT_01", name: "ကထာဝတ္ထုအဋ္ဌကထာ ဘာသာဋီကာ (ပ တွဲ)", index_key: "ကထာဝတ္ထုအဋ္ဌကထာ-ဘာသာဋီကာ၊ ၁", file: "KTVT_AT_BT_01.pdf", page_offset: 70 },
+                { key: "KTVT_AT_BT_02", name: "ကထာဝတ္ထုအဋ္ဌကထာ ဘာသာဋီကာ (ဒု တွဲ)", index_key: "ကထာဝတ္ထုအဋ္ဌကထာ-ဘာသာဋီကာ၊ ၂", file: "KTVT_AT_BT_02.pdf", page_offset: 64 },
+                { key: "PHT_AT_BT", name: "ပဋ္ဌာနအဋ္ဌကထာဘာသာဋီကာ", index_key: "ပဋ္ဌာနအဋ္ဌကထာ-ဘာသာဋီကာ", file: "PHT_AT_BT.pdf", page_offset: 1 },
+                { key: "SMH_AT_BT_01", name: "သမ္မောဟဝိနောဒနီ ဘာသာဋီကာ (ပ တွဲ)", index_key: "သမ္မောဟဝိနောဒနီ-ဘာသာဋီကာ၊ ၁", file: "SMH_AT_BT_01.pdf", page_offset: 1 },
+                { key: "SMH_AT_BT_02", name: "သမ္မောဟဝိနောဒနီ ဘာသာဋီကာ (ဒု တွဲ)", index_key: "သမ္မောဟဝိနောဒနီ-ဘာသာဋီကာ၊ ၂", file: "SMH_AT_BT_02.pdf", page_offset: 14 },
+                { key: "SMH_AT_BT_03", name: "သမ္မောဟဝိနောဒနီ ဘာသာဋီကာ (တ တွဲ)", index_key: "သမ္မောဟဝိနောဒနီ-ဘာသာဋီကာ၊ ၃", file: "SMH_AT_BT_03.pdf", page_offset: 1 },
+                { key: "SMH_AT_BT_04", name: "သမ္မောဟဝိနောဒနီ ဘာသာဋီကာ (စ တွဲ)", index_key: "သမ္မောဟဝိနောဒနီ-ဘာသာဋီကာ၊ ၄", file: "SMH_AT_BT_04.pdf", page_offset: 1 },
+                { key: "YMK_AT_BT", name: "ယမကအဋ္ဌကထာဘာသာဋီကာ", index_key: "ယမကအဋ္ဌကထာ-ဘာသာဋီကာ", file: "YMK_AT_BT.pdf", page_offset: 1 },
+                { key: "PJ_BT_01", name: "ပါရာဇိကဏ်ဘာသာဋီကာ (ပ တွဲ)", index_key: "ပါရာဇိကဏ်-ဘာသာဋီကာ၊ ၁", file: "PJ_BT_01.pdf", page_offset: 1 },
+                { key: "PJ_BT_02", name: "ပါရာဇိကဏ်ဘာသာဋီကာ (ဒု တွဲ)", index_key: "ပါရာဇိကဏ်-ဘာသာဋီကာ၊ ၂", file: "PJ_BT_02.pdf", page_offset: 1 },
+                { key: "PJ_BT_03", name: "ပါရာဇိကဏ်ဘာသာဋီကာ (တ တွဲ)", index_key: "ပါရာဇိကဏ်-ဘာသာဋီကာ၊ ၃", file: "PJ_BT_03.pdf", page_offset: 1 },
+                { key: "PJ_BT_04", name: "ပါရာဇိကဏ်ဘာသာဋီကာ (စ တွဲ)", index_key: "ပါရာဇိကဏ်-ဘာသာဋီကာ၊ ၄", file: "PJ_BT_04.pdf", page_offset: 1 },
+                { key: "PC_BT_01", name: "ပါစိတ်ဘာသာဋီကာ (ပ တွဲ)", index_key: "ပါစိတ်-ဘာသာဋီကာ၊ ၁", file: "PC_BT_01.pdf", page_offset: 1 },
+                { key: "PC_BT_02", name: "ပါစိတ်ဘာသာဋီကာ (ဒု တွဲ)", index_key: "ပါစိတ်-ဘာသာဋီကာ၊ ၂", file: "PC_BT_02.pdf", page_offset: 1 },
+                { key: "MV_BT_01", name: "မဟာဝါဘာသာဋီကာ (ပ တွဲ)", index_key: "မဟာဝါ-ဘာသာဋီကာ၊ ၁", file: "MV_BT_01.pdf", page_offset: 1 },
+                { key: "MV_BT_02", name: "မဟာဝါဘာသာဋီကာ (ဒု တွဲ)", index_key: "မဟာဝါ-ဘာသာဋီကာ၊ ၂", file: "MV_BT_02.pdf", page_offset: 1 },
+                { key: "CV_AT_BT", name: "စူဠဝဂ္ဂဘာသာဋီကာ", index_key: "စူဠဝဂ္ဂ-ဘာသာဋီကာ", file: "CV_AT_BT.pdf", page_offset: 1 },
+                { key: "PV_BT", name: "ပရိဝါဘာသာဋီကာ", index_key: "ပရိဝါရ-ဘာသာဋီကာ", file: "PV_BT.pdf", page_offset: 1 },
+                { key: "KK_AT_BT_01", name: "ကင်္ခါဘာသာဋီကာ (ပတွဲ)", index_key: "ကင်္ခါဝိတရဏီ-ဘာသာဋီကာ၊ ၁", file: "KK_AT_BT_01.pdf", page_offset: 1 },
+                { key: "KK_AT_BT_02", name: "ကင်္ခါဘာသာဋီကာ (ဒု တွဲ)", index_key: "ကင်္ခါဝိတရဏီ-ဘာသာဋီကာ၊ ၂", file: "KK_AT_BT_02.pdf", page_offset: 1 },
+                { key: "KHUDDA_BT", name: "ခုဒ္ဒသိက္ခာ-ဘာသာဋီကာ", index_key: "ခုဒ္ဒသိက္ခာ-ဘာသာဋီကာ", file: "KSK_BT.pdf", page_offset: 1 },
+                { key: "PATMOK_BT", name: "ပါတိမောက်-ဘာသာဋီကာ", index_key: "ပါတိမောက်-ဘာသာဋီကာ", file: "PTM_BT.pdf", page_offset: 1 },
+                { key: "NI_BT", name: "နီ-ဘာသာဋီကာ", index_key: "နီ-ဘာသာဋီကာ", file: "NI_BT.pdf", page_offset: 1 },
+                { key: "THOUT_PATH", name: "သုတ်ပါထေယျ-ဘာသာဋီကာ", index_key: "သုတ်ပါထေယျ-ဘာသာဋီကာ၊ ၁", file: "S_PTY_AT_BT.pdf", page_offset: 1 },
+                { key: "TKK_PN", name: "ဋီကာကျော်နိဿယ", index_key: "ဋီကာကျော်နိဿယ", file: "TKK_PN.pdf", page_offset: 1 },
+            ];
+
+            const RAW_INDEX_DATA = `
+အကပ်ခံအပ်ပြီးဆီနှင့် မခံရသေးသောဆီကိုလဲနည်း	*ပါရာဇိကဏ်-ဘာသာဋီကာ၊ ၄ ၃၆၁
+အကပ်ခံနည်းများ	*ကင်္ခါဝိတရဏီ-ဘာသာဋီကာ၊ ၂ ၁၃၇
+အကပ်ခံရာ၌ဟတ္ထပါသ်တိုင်းပုံ	*ခုဒ္ဒသိက္ခာ-ဘာသာဋီကာ ၁၆၁
+အကပ်ပျက်ကြောင်းအင်္ဂါ	*ခုဒ္ဒသိက္ခာ-ဘာသာဋီကာ ၁၆၃။ *ပါတိမောက်-ဘာသာဋီကာ ၂၉၃
+အကပ်မခံဘဲ အပ်သော ရေ	*ခုဒ္ဒသိက္ခာ-ဘာသာဋီကာ ၁၆၄
+အကပ်မမြောက်သော အရာများ	*ခုဒ္ဒသိက္ခာ-ဘာသာဋီကာ ၁၆၁
+အကပ်မြောက် အင်္ဂါ ၅-ပါး	*ကင်္ခါဝိတရဏီ-ဘာသာဋီကာ၊ ၂ ၁၃၆။ *ခုဒ္ဒသိက္ခာ-ဘာသာဋီကာ ၁၆၀။ *ပါတိမောက်-ဘာသာဋီကာ၊ ၂ ၂၈၉
+အကပ္ပိယ အရေ	*ကင်္ခါဝိတရဏီ-ဘာသာဋီကာ၊ ၂ ၄၄
+အကပ္ပိယနိမန္တန	*ပါစိတ်-ဘာသာဋီကာ၊ ၁ ၂၁၂
+အကပ္ပိယဝတ္ထုများ (နိဿဂ္ဂိယဝတ္ထု,ဒုက္ကဋဝတ္ထု)	*ပါတိမောက်-ဘာသာဋီကာ ၁၆၂
+အကပ္ပိယဝေါဟာရများ	*ခုဒ္ဒသိက္ခာ-ဘာသာဋီကာ ၃၈၃
+အကပ္ပိယဝေါဟာရော	*ပါရာဇိကဏ်-ဘာသာဋီကာ၊ ၄ ၁၅၆၊ ၃၀၇
+အကပ္ပိယသမာဒါနဒုက္ကဋ်	*ခုဒ္ဒသိက္ခာ-ဘာသာဋီကာ ၄၃၅
+အကမ္မက, ဧကကမ္မက, ဒွိကမ္မကတို့၏သဘော	*ဘေဒစိန္တာ-ဘာသာဋီကာ ၂၃၇
+အကမ္မကဓာတ်တို့၏ အတ္ထဝိသေသအစွမ်းဖြင့်သကမ္မကဓာတ်ဖြစ်နိုင်ပုံ	*ရူပသိဒ္ဓိ-ဘာသာဋီကာ၊ ၂ ၃၀၆
+အကမ္မညတာကာရော	*သမ္မောဟဝိနောဒနီ-ဘာသာဋီကာ၊ ၄ ၁၈၆
+အကရမှသေ	*ကစ္စည်း-ဘာသာဋီကာ၊ ၁ ၆၇။ *ရူပသိဒ္ဓိ-ဘာသာဋီကာ၊ ၂ ၃၆၇
+အကသိရလာဘီ	*သုတ်ပါထေယျ-ဘာသာဋီကာ၊ ၁ ၃၃၂-၃
+အကာ, အကရာ, အကတ္ထ	*ရူပသိဒ္ဓိ-ဘာသာဋီကာ၊ ၂ ၃၆၆
+အကာပုရိသသေဝိတော	*သမ္မောဟဝိနောဒနီ-ဘာသာဋီကာ၊ ၃ ၂၀၂
+အကာမကာ	*ပါရာဇိကဏ်-ဘာသာဋီကာ၊ ၂ ၁၉၇။ *သီလက္ခန်-ဘာသာဋီကာ၊ ၃ ၈၁
+အကာရကခေါ်ပုံ	*ကစ္စည်း-ဘာသာဋီကာ၊ ၁ ၃၇၄
+အကာရ- သဒ္ဒါသည် ပစ္စယန္တနာမ်ပုဒ်တစ်မျိုး	*ရူပသိဒ္ဓိ-ဘာသာဋီကာ၊ ၂ ၅၉၂
+အကာရော ဥစ္စာရဏတ္ထော-၌ အနက်ပေးမှားကြပုံ	*ရူပသိဒ္ဓိ-ဘာသာဋီကာ၊ ၁ ၃၄
+အကာလစီဝရ, ကာလစီဝရ	*ပါတိမောက်-ဘာသာဋီကာ ၁၃၀
+အကာလမရဏနှင့်စပ်၍ မှတ်ဖွယ်ရာများ	*သင်္ဂြီုဟ်ဘာသာဋီကာ ၄၁၂
+အကာလိကော	*ပါရာဇိကဏ်-ဘာသာဋီကာ၊ ၂ ၃၉၁
+အကိစ္ဆံ	*အဋ္ဌကထာ-အခြေပြု ၂၃၁
+အကိစ္ဆလာဘီ	*သုတ်ပါထေယျ-ဘာသာဋီကာ၊ ၁ ၃၃၂
+အကိတ္တိမပကတိကာ = အကုတ္တိမပကတိကာ	*သမ္မောဟဝိနောဒနီ-ဘာသာဋီကာ၊ ၃ ၅၆၂
+အကိတ္တိမာ = အကုတ္တိမာ	*သုတ်ပါထေယျ-ဘာသာဋီကာ၊ ၁ ၃၅၈
+အကိရိယဒိဋ္ဌိ	*သမ္မောဟဝိနောဒနီ-ဘာသာဋီကာ၊ ၂ ၂၂၇
+အကိရိယဒိဋ္ဌိကော	*သီလက္ခန်-ဘာသာဋီကာ၊ ၂ ၃53
+အကိရိယဝါဒေါ	*ပါရာဇိကဏ်-ဘာသာဋီကာ၊ ၁ ၅၃၀။ *သီလက္ခန်-ဘာသာဋီကာ၊ ၂ ၃၅၃
+အကိရိယသမုဋ္ဌာနာ	*ကင်္ခါဝိတရဏီ-ဘာသာဋီကာ၊ ၁ ၁၁၄
+အကိလိန္နံ	*ကင်္ခါဝိတရဏီ-ဘာသာဋီကာ၊ ၁ ၄၂၃
+အကုတောဘယာ	*သီလက္ခန်-ဘာသာဋီကာ၊ ၃ ၄၈၆
+အကုတ္တိမံ	*သုတ်မဟာဝါ-ဘာသာဋီကာ၊ ၁ ၂၃၃
+အကုပ္ပံ	*ကင်္ခါဝိတရဏီ-ဘာသာဋီကာ၊ ၁ ၁၂၂။ *ပါရာဇိကဏ်-ဘာသာဋီကာ၊ ၂ ၅၃၈
+အကုပ္ပဓမ္မတံ	*ပါရာဇိကဏ်-ဘာသာဋီကာ၊ ၁ ၅၄၄
+အကုသလာ-၌ အ ၏ အနက်	*သင်္ဂြီုဟ်ဘာသာဋီကာ ၄၉
+အကုသလကမ္မပထအဘိဇ္ဈာ နှင့် အဘိဇ္ဈာကာယဂန္ထအထူး	*သင်္ဂြီုဟ်ဘာသာဋီကာ ၅၅၃
+အကုသလကမ္မပထဗျာပါဒနှင့် ဗျာပါဒ-ကာယဂန္ထအထူး	*သင်္ဂြီုဟ်ဘာသာဋီကာ ၅၅၃
+အကုသလကမ္မပထော	*အဋ္ဌကထာ-အခြေပြု ၃၁၂
+အကုသလသင်္ခါတာ	*သုတ်ပါထေယျ-ဘာသာဋီကာ၊ ၁ ၁၆၄၊ ၅၄၂
+အကုသိုလ်စိတ် ၁၂-ပါး ပြားရခြင်း	*သင်္ဂြီုဟ်ဘာသာဋီကာ ၄၉
+အကုသိုလ်စိတ်တို့ ရှေ့နောက်စဉ်ပုံ	*သင်္ဂြီုဟ်ဘာသာဋီကာ ၂၆
+အကုသိုလ်ဘာဝနာ	*သမ္မောဟဝိနောဒနီ-ဘာသာဋီကာ၊ ၂ ၆၀၅
+အက္ကောစ္ဆိ	*အဋ္ဌကထာ-အခြေပြု ၆၅
+အက္ကောစ္ဆိ မံ အဝဓိ-၌ သန္ဓိမစပ်ရခြင်းအကြောင်း	*ကစ္စည်း-ဘာသာဋီကာ၊ ၁ ၃၃
+အက္ကောသတိ	*ရူပသိဒ္ဓိ-ဘာသာဋီကာ၊ ၂ ၃၀၆
+အက္ကောသဝတ္ထု ၁၀-ပါး	*ပါတိမောက်-ဘာသာဋီကာ ၂၀၆
+အက္ခဒဿာ	*ပါရာဇိကဏ်-ဘာသာဋီကာ၊ ၂ ၅၆၀
+အက္ခဓုတ္တာ	*ကင်္ခါဝိတရဏီ-ဘာသာဋီကာ၊ ၁ ၆၁
+အက္ခန္တိမူလကာ	*သမ္မောဟဝိနောဒနီ-ဘာသာဋီကာ၊ ၃ ၆၀၅
+အက္ခဗ္ဘဉ္ဇနဝဏလေပနပုတ္တမံသူပမာ	*သီလက္ခန်-ဘာသာဋီကာ၊ ၃ ၃၂
+အက္ခယိတံ = အက္ခာယိတံ	*ပါရာဇိကဏ်-ဘာသာဋီကာ၊ ၂ ၄၂၈
+အက္ခရံ	*သုတ်ပါထေယျ-ဘာသာဋီကာ၊ ၁ ၁၉၃။ *ပါရာဇိကဏ်-ဘာသာဋီကာ၊ ၁ ၄၈၉။ *သီလက္ခန်-ဘာသာဋီကာ၊ ၃ ၃၁၂
+အက္ခရအရ ပုဒ်ပါဝင်	*ကစ္စည်း-ဘာသာဋီကာ၊ ၁ 十三
+အက္ခရကောသလ္လဉာဏ်	*ကစ္စည်း-ဘာသာဋီကာ၊ ၁ ၁၄
+အက္ခရအမောဟဘာဝ, ပဒအမောဟဘာဝဉာဏ်	*ကစ္စည်း-ဘာသာဋီကာ၊ ၁ ၆
+အက္ခရပဒကို သိရခြင်းသည် မူလအကြောင်း	*ကစ္စည်း-ဘာသာဋီကာ၊ ၁ ၄
+အက္ခရ, ပဒ, ဗျဉ္ဇန	*ပါရာဇိကဏ်-ဘာသာဋီကာ၊ ၁ ၄၈၅
+အက္ခရပ္ပဘေဒေါ (ကျမ်း)	*သီလက္ခန်-ဘာသာဋီကာ၊ ၃ ၃၁၆
+အက္ခရလိခနံ	*ကင်္ခါဝိတရဏီ-ဘာသာဋီကာ၊ ၁ ၁၃၉
+အက္ခရဝိပတ္တိ	*ကစ္စည်း-ဘာသာဋီကာ၊ ၁ ၁၂
+အက္ခရသမူဟောပဒံ၊ ပဒသမူဟောဝါကျံ၊ဝါကျသမူဟော ဂန္ထော	*ရူပသိဒ္ဓိ-ဘာသာဋီကာ၊ ၁ ၁၁
+အက္ခရာ	*ရူပသိဒ္ဓိ-ဘာသာဋီကာ၊ ၁ ၁၅
+အက္ခရာအစဉ်	*ရူပသိဒ္ဓိ-ဘာသာဋီကာ၊ ၁ ၁၇
+အက္ခရာပါဒယော သုတ်ကို သညာသုတ်ဟု မယူလို	*ကစ္စည်း-ဘာသာဋီကာ၊ ၁ ၁၆
+အက္ခရာ ရှေ့နောက်စဉ်ပုံ	*ရူပသိဒ္ဓိ-ဘာသာဋီကာ၊ ၁ ၂၃
+အက္ခရိကာ	*ပါရာဇိကဏ်-ဘာသာဋီကာ၊ ၄ ၁၇၇။ *သီလက္ခန်-ဘာသာဋီကာ၊ ၁ ၅၃၃
+အက္ခာနံ	*သီလက္ခန်-ဘာသာဋီကာ၊ ၁ ၅၂၂
+အက္ခိတ္တော အနုပက္ကုဋ္ဌော ဇာတိဝါဒေန	*သမ္မောဟဝိနောဒနီ-ဘာသာဋီကာ၊ ၁ ၁၄၄
+အက္ခိတ္တော အနုပက္ကုဋ္ဌော ဇာတိဝါဒေန	*သီလက္ခန်-ဘာသာဋီကာ၊ ၃ ၄၇၁
+အက္ခိပူဇံ	*ပါရာဇိကဏ်-ဘာသာဋီကာ၊ ၁ ၂၂၁
+အက္ခုဒ္ဓိ- ဝက်စွယ်ဟူသည်	*ပါရာဇိကဏ်-ဘာသာဋီကာ၊ ၃ ၈
+အက္ခောဘိဏီစသော အထက်သချင်္ာများ၌မှတ်ဖွယ်	*ကစ္စည်း-ဘာသာဋီကာ၊ ၂ ၂၂၈
+အက္ခောဘိဏီတပ် ဖွဲ့ပုံ	*ကစ္စည်း-ဘာသာဋီကာ၊ ၂ ၂၂၉
+အင်္ကေ (အနက်)	*ခုဒ္ဒသိက္ခာ-ဘာသာဋီကာ ၁၁၀
+အကျင့်မပါလျှင် စာကြိုးစားသော်လည်း ဝီရိယရှိရာမရောက်	*သုတ်မဟာဝါ-ဘာသာဋီကာ၊ ၂ ၉၃
+အကျဉ်းချုပ်၍ ဘုရားအာရုံပြုပုံ	*ခုဒ္ဒသိက္ခာ-ဘာသာဋီကာ ၅၇၂
+အကျိုးတစ်ပါး ပြီးလတ်ငြားသော်	*သမ္မောဟဝိနောဒနီ-ဘာသာဋီကာ၊ ၁ ၄၉၉
+အကျိုးတစ်ပါး ရှိတုံငြားက	*ဋီကာကျော်နိဿယ ၅၁။ *ပါရာဇိကဏ်-ဘာသာဋီကာ၊ ၁ ၃၅။ *သီလက္ခန်-ဘာသာဋီကာ၊ ၁ ၃၄။ *သီလက္ခန်-ဘာသာဋီကာ၊ ၂ ၁၇၀
+အကျိုးပေးပြီးနောက် တာဝန်မခံတော့	*သမ္မောဟဝိနောဒနီ-ဘာသာဋီကာ၊ ၂ ၁၂၀
+အကြောင်း၏ အကြောင်းလည်း အကြောင်းပဲ	*ပါရာဇိကဏ်-ဘာသာဋီကာ၊ ၂ ၁
+အကြောင်းကို မေးသော်လည်း အကျိုးကိုဖြေနိုင်	*သီလက္ခန်-ဘာသာဋီကာ၊ ၄ ၂၁၆
+အကြောင်းမစုံ လောင်းပြန်တုံ မှတ်ကုန်- ဟိတ်ကူတည်း-၏ အဓိပ္ပါယ်	*ဓာတုကထာ-ဘာသာဋီကာ ၃၈၃
+အကြောင်းမရှိဘဲ ပါတိမောက်အကျဉ်း မပြရ	*ပါတိမောက်-ဘာသာဋီကာ ၄၀၇
+အကြောင်းရှိမှ ဖျော်ရည်သောက်ကောင်း	*ပါတိမောက်-ဘာသာဋီကာ ၂၈၂
+အခဏ္ဍာနိ	*ပရိဝါရ-ဘာသာဋီကာ ၄၂
+အခုဒ္ဒါဝကာသော	*သီလက္ခန်-ဘာသာဋီကာ၊ ၃ ၄၇၅
+အခြားကျောင်းတိုက်သို့ ပွဲကြည့်မသွားကောင်း	*ကင်္ခါဝိတရဏီ-ဘာသာဋီကာ၊ ၂ ၃၄၅
+အခြားစကြာဝဠာ၌ ဘုရားမရှိ	*သုတ်ပါထေယျ-ဘာသာဋီကာ၊ ၁ ၃၆၀
+အဂဏနူပိကာအာပတ်	*ပရိဝါရ-ဘာသာဋီကာ ၅၄
+အဂတိံ	*ပါရာဇိကဏ်-ဘာသာဋီကာ၊ ၁ ၆၉
+အဂန္ဓကံ	*အဋ္ဌကထာ-အခြေပြု ၃၅၀
+အဂမံသု	*ရူပသိဒ္ဓိ-ဘာသာဋီကာ၊ ၂ ၂၈၈
+အဂမနပထံ	*ပါရာဇိကဏ်-ဘာသာဋီကာ၊ ၄ ၂၅၄
+            `;
+
+            let searchableIndex = [];
+            let uniqueHeadwords = [];
+            
+            function decodeHtmlEntities(text) {
+                const textArea = document.createElement('textarea');
+                textArea.innerHTML = text;
+                return textArea.value;
+            }
+
+            function removeZeroWidthChars(text) {
+                if (typeof text !== 'string') return '';
+                return text.replace(/[\u200B-\u200D\uFEFF]/g, '');
+            }
+
+            function convertBurmeseToArabic(burmeseNumStr) {
+                const burmeseDigits = '၀၁၂၃၄၅၆၇၈၉';
+                const arabicDigits = '0123456789';
+                let arabicNumStr = '';
+                if (typeof burmeseNumStr !== 'string') return ''; 
+
+                for (let i = 0; i < burmeseNumStr.length; i++) {
+                    const char = burmeseNumStr[i];
+                    const index = burmeseDigits.indexOf(char);
+                    if (index !== -1) {
+                        arabicNumStr += arabicDigits[index];
+                    } else {
+                        arabicNumStr += char; 
+                    }
+                }
+                return arabicNumStr;
+            }
+
+            function parseIndexData() {
+                const keywordMap = {}; 
+                const ignoreRegex = /[\s\u200B-\u200D\uFEFF\u200C\u200D\-\u2013\u2014၊,။.()]/g;
+                
+                const bookMatchers = BOOKS.map(book => {
+                    const index_parts = book.index_key.split(/၊\s*|,\s*/).map(p => p.trim());
+                    let normalizedKey = book.index_key.replace(ignoreRegex, '');
+                    return {
+                        normalizedKey: normalizedKey,
+                        bookData: {
+                            name: book.name,
+                            url: BASE_URL + book.file,
+                            base_title: index_parts[0],
+                            volume: index_parts[1] || '',
+                            page_offset: book.page_offset || 0 
+                        }
+                    };
+                });
+
+                bookMatchers.sort((a, b) => b.normalizedKey.length - a.normalizedKey.length);
+
+                const decodedData = decodeHtmlEntities(RAW_INDEX_DATA);
+                const lines = decodedData.trim().split('\n').filter(line => line.trim() !== '');
+
+                lines.forEach(line => {
+                    const parts = line.split('\t').map(p => removeZeroWidthChars(p.trim()));
+                    if (parts.length < 2) return;
+
+                    const keyword = decodeHtmlEntities(parts[0].trim());
+                    const rawReferences = parts[1];
+
+                    if (!keywordMap[keyword]) {
+                        keywordMap[keyword] = { keyword: keyword, refs: [] };
+                        if (!uniqueHeadwords.includes(keyword)) {
+                            uniqueHeadwords.push(keyword);
+                        }
+                    }
+
+                    const references = rawReferences.split('။');
+
+                    references.forEach(ref => {
+                        let cleanRef = decodeHtmlEntities(ref.trim().replace(/^\*\s*/, ''));
+                        if (!cleanRef) return; 
+
+                        let matchedBook = null;
+                        let pagePart = "";
+                        let refTextForUI = cleanRef;
+
+                        let normalizedCleanRef = cleanRef.replace(ignoreRegex, '');
+
+                        for (const bm of bookMatchers) {
+                            if (normalizedCleanRef.startsWith(bm.normalizedKey)) {
+                                matchedBook = bm.bookData;
+                                
+                                let validCharCount = 0;
+                                let boundaryIndex = 0;
+                                for (let i = 0; i < cleanRef.length; i++) {
+                                    if (!cleanRef[i].match(ignoreRegex)) {
+                                        validCharCount++;
+                                    }
+                                    if (validCharCount === bm.normalizedKey.length) {
+                                        boundaryIndex = i + 1;
+                                        break;
+                                    }
+                                }
+                                
+                                pagePart = cleanRef.substring(boundaryIndex).trim();
+                                refTextForUI = matchedBook.base_title + (matchedBook.volume ? '၊ ' + matchedBook.volume : '');
+                                break;
+                            }
+                        }
+
+                        if (!matchedBook) {
+                            const pageMatch = cleanRef.match(/([\d\u1040-\u1049က-အ\s၊,\-]+)$/);
+                            if (pageMatch) {
+                                pagePart = pageMatch[1].trim();
+                                refTextForUI = cleanRef.substring(0, pageMatch.index).trim();
+                            }
+                        }
+
+                        const pages = pagePart.split(/[,၊]/).map(p => p.trim()).filter(p => p);
+                        
+                        if (pages.length === 0) {
+                             keywordMap[keyword].refs.push({
+                                book: refTextForUI,
+                                page: "N/A",
+                                url: matchedBook ? matchedBook.url : '#',
+                                ref_text: decodeHtmlEntities(ref.trim())
+                            });
+                        } else {
+                            pages.forEach(pageStr => {
+                                 let arabicPageStr = convertBurmeseToArabic(pageStr);
+                                 let pageNumMatch = arabicPageStr.match(/\d+/);
+                                 let finalUrl = '#';
+
+                                 if (matchedBook && pageNumMatch) {
+                                      const pageNum = parseInt(pageNumMatch[0], 10);
+                                      const targetPage = pageNum + matchedBook.page_offset;
+                                      finalUrl = `${matchedBook.url}#page=${targetPage}`;
+                                 } else if (matchedBook) {
+                                      finalUrl = matchedBook.url; 
+                                 }
+
+                                 keywordMap[keyword].refs.push({
+                                     book: refTextForUI,
+                                     page: pageStr,
+                                     url: finalUrl,
+                                     ref_text: decodeHtmlEntities(ref.trim())
+                                 });
+                            });
+                        }
+                    });
+                });
+
+                const result = [];
+                for (const key in keywordMap) {
+                    result.push(keywordMap[key]);
+                }
+                return result;
+            }
+
+            function setupDropdown() {
+                const searchInput = document.getElementById('searchInput');
+                const dropdownMenu = document.getElementById('dropdownMenu');
+                const searchContainer = document.getElementById('searchContainer');
+
+                uniqueHeadwords.sort((a, b) => a.localeCompare(b, 'my'));
+
+                function renderDropdownItems(filterText = '') {
+                    dropdownMenu.innerHTML = '';
+                    const searchTerms = filterText.toLowerCase().split(/\s+/).filter(t => t);
+                    
+                    let filteredWords = uniqueHeadwords;
+                    if (searchTerms.length > 0) {
+                         filteredWords = uniqueHeadwords.filter(word => {
+                            const wordLower = word.toLowerCase();
+                            return searchTerms.every(term => wordLower.includes(term));
+                        });
+                    }
+
+                    if (filteredWords.length === 0) {
+                        const noResultItem = document.createElement('div');
+                        noResultItem.className = 'dropdown-item text-center';
+                        noResultItem.style.color = '#6b7280';
+                        noResultItem.style.fontStyle = 'italic';
+                        noResultItem.textContent = 'ရလဒ် မတွေ့ပါ';
+                        dropdownMenu.appendChild(noResultItem);
+                        return;
+                    }
+
+                    const limit = Math.min(filteredWords.length, 100);
+                    for (let i = 0; i < limit; i++) {
+                        const item = document.createElement('div');
+                        item.className = 'dropdown-item';
+                        item.textContent = filteredWords[i];
+                        
+                        item.onclick = function(e) {
+                            e.stopPropagation();
+                            searchInput.value = this.textContent;
+                            dropdownMenu.classList.remove('show');
+                            displaySelectedResult(this.textContent);
+                        };
+                        
+                        dropdownMenu.appendChild(item);
+                    }
+                }
+
+                searchInput.onfocus = function() {
+                    this.select();
+                };
+
+                function handleSearchTyping() {
+                    if (searchInput.value.trim() === '') {
+                        dropdownMenu.classList.remove('show');
+                        document.getElementById('resultsContainer').innerHTML = '';
+                        document.getElementById('initialMessage').classList.remove('hidden');
+                        return;
+                    }
+                    dropdownMenu.classList.add('show');
+                    renderDropdownItems(searchInput.value);
+                }
+
+                searchInput.addEventListener('input', handleSearchTyping);
+                
+                document.addEventListener('click', function(e) {
+                    if (searchContainer && !searchContainer.contains(e.target)) {
+                        dropdownMenu.classList.remove('show');
+                    }
+                });
+            }
+
+            function displaySelectedResult(selectedKeyword) {
+                const resultsContainer = document.getElementById('resultsContainer');
+                const initialMessage = document.getElementById('initialMessage');
+                const errorMessageDiv = document.getElementById('errorMessage');
+
+                if (!resultsContainer) return;
+                
+                if (errorMessageDiv) errorMessageDiv.style.display = 'none';
+                if (initialMessage) initialMessage.style.display = 'none';
+                resultsContainer.innerHTML = '';
+                
+                const selectedItem = searchableIndex.find(item => item.keyword === selectedKeyword);
+                
+                if (!selectedItem) {
+                     resultsContainer.innerHTML = '<div style="text-align: center; color: #ef4444; margin-top: 2rem; padding: 1rem; border: 2px solid #fecaca; border-radius: 0.5rem; background-color: #fef2f2;">ဤဝေါဟာရအတွက် ရလဒ် မတွေ့ပါ။</div>';
+                     return;
+                }
+
+                const resultDiv = document.createElement('div');
+                resultDiv.className = 'result-card';
+                
+                let refsHtml = '';
+                
+                // Expose a global function just for the onclick handlers
+                window.openPdfLink = function(url, bookName, keyword) {
+                    if (url === '#') {
+                        showErrorMsg(`"${bookName}" (${keyword}) အတွက် PDF လိပ်စာကို စနစ်တွင်း စာရင်းတွင် ရှင်းရှင်းလင်းလင်း ရှာမတွေ့သောကြောင့် ဖွင့်မရပါ။`);
+                    } else {
+                        try {
+                            window.open(url, '_blank');
+                        } catch (error) {
+                            showErrorMsg("လင့်ခ်ကို ဖွင့်ရာတွင် အမှားအယွင်း ရှိခဲ့ပါသည်။");
+                        }
+                    }
+                };
+
+                selectedItem.refs.forEach(ref => {
+                    let bookNameDisplay = ref.book;
+                    
+                    const safeUrl = ref.url.replace(/'/g, "\\'");
+                    const safeBook = ref.book.replace(/'/g, "\\'");
+                    const safeKeyword = selectedItem.keyword.replace(/'/g, "\\'");
+
+                    let clickHandler = `onclick="window.openPdfLink('${safeUrl}', '${safeBook}', '${safeKeyword}')"`;
+                    let itemClasses = 'ref-item'; 
+                    let buttonHtml = `<button class="btn">
+                                        <span>PDF ဖွင့်ရန်</span>
+                                        <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                                      </button>`;
+
+                    if (ref.url === '#') {
+                        bookNameDisplay = `[မှတ်တမ်း မပြည့်စုံ] ${ref.book}`;
+                        clickHandler = ''; 
+                        itemClasses = 'ref-item ref-item-disabled'; 
+                        buttonHtml = `<button disabled class="btn"><span>မရနိုင်ပါ</span></button>`;
+                    }
+                    
+                    refsHtml += `
+                        <div class="${itemClasses}" ${clickHandler}>
+                            <div class="ref-content">
+                                <div class="book-title">
+                                    <svg class="book-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                                    ${bookNameDisplay}
+                                </div>
+                                <div class="ref-details">
+                                    <span class="page-badge">စာမျက်နှာ: ${ref.page}</span>
+                                    <span class="ref-text">${ref.ref_text}</span>
+                                </div>
+                            </div>
+                            ${buttonHtml}
+                        </div>
+                    `;
+                });
+
+                resultDiv.innerHTML = `
+                    <div class="result-header">
+                        <svg style="margin-right:0.75rem" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <span>${selectedItem.keyword}</span>
+                    </div>
+                    <div>${refsHtml}</div>
+                `;
+
+                resultsContainer.appendChild(resultDiv);
+            }
+
+            function showErrorMsg(text) {
+                const errorDiv = document.getElementById('errorMessage');
+                const errorText = document.getElementById('errorText');
+                if (errorDiv && errorText) { 
+                    errorText.textContent = text;
+                    errorDiv.style.display = 'block';
+                }
+            }
+
+            function initApp() {
+                try {
+                    searchableIndex = parseIndexData();
+                    setupDropdown();
+                } catch (e) {
+                    showErrorMsg("အဘိဓာန်ဒေတာများကို ပြုစုရာတွင် အမှားအယွင်းရှိခဲ့ပါသည်။");
+                    console.error("Initialization Error:", e);
+                }
+            }
+
+            // Ensure DOM is fully loaded before running script in Blogspot
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initApp);
+            } else {
+                initApp();
+            }
+
+        })();
+    </script>
+</body>
+</html>
